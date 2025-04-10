@@ -1,24 +1,48 @@
+
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Live Google Slides Slideshow</title>
-    <meta http-equiv="refresh" content="30"> <!-- Refresh every 30 seconds -->
-    <style>
-      html, body {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        background-color: black;
-        overflow: hidden;
+<head>
+  <title>Upload a Wedding Photo</title>
+</head>
+<body>
+  <h2>Upload Your Photo</h2>
+  <input type="text" id="name" placeholder="Your name"><br><br>
+  <input type="file" id="photoInput"><br><br>
+  <button onclick="upload()">Submit</button>
+  <p id="response"></p>
+
+  <script>
+    async function upload() {
+      const fileInput = document.getElementById('photoInput');
+      const name = document.getElementById('name').value;
+      const responseEl = document.getElementById('response');
+
+      if (!fileInput.files.length) {
+        alert('Please select a photo.');
+        return;
       }
-      iframe {
-        width: 100%;
-        height: 100%;
-        border: none;
-      }
-    </style>
-  </head>
-  <body>
-    <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vSkuD3MLDIfHCXbJNUrxUyGSAJn60TFCmNrdbMdUJw0bvB_2853_lN_ITuP9NTOuC2xe1pTYgA1NPcV/pub?start=true&loop=true&delayms=3000" allowfullscreen></iframe>
-  </body>
+
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+
+      reader.onloadend = async () => {
+        const base64 = reader.result.split(',')[1];
+
+        const formData = new URLSearchParams();
+        formData.append('image', base64);
+        formData.append('name', name);
+
+        const res = await fetch('https://script.google.com/macros/s/AKfycbwbFepNyAcfvgJfL-I1-K1H93Z4IAycRBVz6AVRsZwCTLKF7AXTeXPwh0kjh9ltL9rE/exec', {
+          method: 'POST',
+          body: formData
+        });
+
+        const text = await res.text();
+        responseEl.textContent = text;
+      };
+
+      reader.readAsDataURL(file);
+    }
+  </script>
+</body>
 </html>
